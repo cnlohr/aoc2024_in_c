@@ -2,7 +2,7 @@ all : day3 day3b
 
 .PHONY : test
 
-CFLAGS:=-g -Og -I..
+CFLAGS:=-g -O1 -I..
 
 day3 : day3.c
 	gcc $(CFLAGS) -o $@ $^

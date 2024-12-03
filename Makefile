@@ -4,8 +4,9 @@ all : $(SUBDIRS)
 .PHONY : fulltest $(SUBDIRS)
 
 $(SUBDIRS) :
-	$(MAKE) -C $@ clean test
-	$(MAKE) -C $@ clean
+	$(MAKE) -s -C $@ clean
+	$(MAKE) -C $@ test
+	$(MAKE) -s -C $@ clean
 
 
 	

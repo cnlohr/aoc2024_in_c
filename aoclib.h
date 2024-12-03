@@ -83,8 +83,7 @@ void unget( void )
 {
 	if( haslastchar )
 	{
-		terror( "got extra char" );
-		exit( -1 );
+		terror( "double unget" );
 	}
 	haslastchar = 1;
 }
