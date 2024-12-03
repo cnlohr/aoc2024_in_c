@@ -145,11 +145,6 @@ int takeNumber( int * rnum )
 			break;
 		}
 	} while( 1 );
-	if( numpl == 0 )
-	{
-		terror( "not a number" );
-		exit( -1 );
-	}
 	unget();
 	*rnum = num;
 	return numpl;
