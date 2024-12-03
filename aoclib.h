@@ -136,10 +136,6 @@ int takeNumber( int * rnum )
 		{
 			return 0;
 		}
-		else if( c == EOF )
-		{
-			terror( "unexpected eof" ); 
-		}
 		else
 		{
 			break;
