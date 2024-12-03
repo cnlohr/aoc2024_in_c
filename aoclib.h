@@ -14,11 +14,11 @@ void unget( void );
 int iseof( void );
 int peekChar( void );
 int takeNumber( int * n );
-void takeChar( int c );
+int takeChar( int c );
 void consumeWhitespace( void );
 void quickSort( int * list, int start, int end );
 void appendToList( int ** list, int * len, int num );
-int stringMatch( const char * str );
+int takeString( const char * str );
 
 void quickSort( int * list, int start, int end )
 {
@@ -106,7 +106,7 @@ int peekChar( void )
 	}
 }
 
-int stringMatch( const char * str )
+int takeString( const char * str )
 {
 	int c;
 	while( c = *(str++) )
@@ -146,13 +146,14 @@ int takeNumber( int * rnum )
 	return numpl;
 }
 
-void takeChar( int c )
+int takeChar( int c )
 {
 	if( gchar() == c )
 	{
-		return;
+		return 1;
 	}
-	terror( "unexpected char" );
+	unget();
+	return 0;
 }
 
 void consumeWhitespace( void )

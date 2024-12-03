@@ -7,25 +7,25 @@ int main()
 	while( !iseof() )
 	{
 		int n1, n2;
-		if( stringMatch( "do" ) )
+		if( takeString( "do" ) )
 		{
 			if( peekChar() == 'n' )
 			{
-				if( stringMatch( "n't()" ) )
+				if( takeString( "n't()" ) )
 					dont = 1;
 			}
 			else
 			{
-				if( stringMatch( "()" ) )
+				if( takeString( "()" ) )
 					dont = 0;
 			}
 		}
 
-		if( !stringMatch( "mul(" ) ||
+		if( !takeString( "mul(" ) ||
 			!takeNumber( &n1 ) ||
-			!stringMatch(",") ||
+			!takeChar( ',' ) ||
 			!takeNumber( &n2 ) ||
-			!stringMatch( ")" ) )
+			!takeChar( ')' ) )
 		{
 			gchar();
 			continue;
