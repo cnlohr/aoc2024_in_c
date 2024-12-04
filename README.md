@@ -7,5 +7,7 @@ Three personal goals here:
  * Iterate on using less stdlibc.
  * Complete day 7.
 
+In order to iterate more smoothly, I am using this as a test suite, as per the github CI.
+
 We'll see how far I get.
 
