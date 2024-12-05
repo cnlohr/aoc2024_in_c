@@ -21,6 +21,9 @@ void quickSort( int * list, int start, int end );
 void appendToList( int ** list, int * len, int num );
 int takeString( const char * str );
 
+void terror( const char * err );
+void zdata( void * data, int len );
+
 void quickSort( int * list, int start, int end )
 {
     if( start >= end )
@@ -55,12 +58,6 @@ void appendToList( int ** list, int * len, int num )
 	*list = realloc( *list, sizeof(int) * lenp1 );
 	(*list)[lenv] = num;
 	*len = lenp1;
-}
-
-void terror( const char * err )
-{
-	fprintf( stderr, "Error: %s (at %d, %d) (%c, %d)\n", err, lineno, charno, lastchar, lastchar );
-	exit( 0 );
 }
 
 int gchar( void )
@@ -165,6 +162,18 @@ void consumeWhitespace( void )
 	} while( c == ' ' || c == '\t' );
 	unget();
 	return;
+}
+
+
+void terror( const char * err )
+{
+	fprintf( stderr, "Error: %s (at %d, %d) (%c, %d)\n", err, lineno, charno, lastchar, lastchar );
+	exit( 0 );
+}
+
+void zdata( void * data, int len )
+{
+	memset( data, 0, len );
 }
 
 #endif
