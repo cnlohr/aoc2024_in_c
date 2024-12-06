@@ -127,4 +127,4 @@ int main()
 }
 
 
-// tried 1709, 1708 (just randomly 1708) -- 1708 is too high. ... not 1707 either.
+// tried 1709, 1708 (just randomly 1708) -- 1708 is too high. ... not 1707 either.... or 1387

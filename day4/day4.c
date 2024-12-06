@@ -26,6 +26,8 @@ int main()
 		}
 	}
 
+	if( xthisline != 0 ) ly++;
+
 	int hits = 0;
 
 	for( int dir = 0; dir < 8; dir++ )
