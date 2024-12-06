@@ -39,6 +39,9 @@ int guardrun( int * map, int * loopcheck, int guardx, int guardy )
 	{
 		int nextx = guardx + gdx[guarddir];
 		int nexty = guardy + gdy[guarddir];
+
+		if( !( nextx >= 0 && nextx < lx && nexty >= 0 && nexty < ly  ) ) break;
+
 		int nextc = map[nextx+nexty*lx];
 		if( nextc == '#' || nextc == 'O' )
 		{
@@ -48,16 +51,12 @@ int guardrun( int * map, int * loopcheck, int guardx, int guardy )
 		{
 			guardx = nextx;
 			guardy = nexty;
-			
-			if( !( guardx >= 0 && guardx < lx && guardy >= 0 && guardy < ly  ) ) break;
 		}
 
 		int gmask = 1<<guarddir;
 
 		if( loopcheck[guardx + guardy*lx] & gmask )
 			return 1;
-		//step++;
-		//if( step > 200000 ) return 1;
 		
 		char now = loopcheck[guardx + guardy*lx] |= gmask;
 		map[guardx + guardy*lx] = " |-+||++-+-+++++"[now];
@@ -98,7 +97,7 @@ int main()
 	int * firstmap = malloc( lx * ly * sizeof( int ) );
 	memcpy( firstmap, mapin, sizeof(int) * lx * ly );
 	guardrun( firstmap, loopcheck, guardx, guardy );
-	PrintMap( firstmap, guardx, guardy );
+	//PrintMap( firstmap, guardx, guardy );
 
 	int x, y;
 	

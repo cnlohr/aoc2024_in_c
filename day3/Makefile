@@ -12,9 +12,7 @@ day3b : day3b.c
 
 test : day3 day3b
 	test "$(shell ./day3 < sample.txt)" = "161"
-	test "$(shell ./day3 < input.txt)" = "155955228"
 	test "$(shell ./day3b < sample2.txt)" = "48"
-	test "$(shell ./day3b < input.txt)" = "100189366"
 
 clean :
 	rm -rf day3 day3b

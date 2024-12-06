@@ -64,10 +64,10 @@ int main()
 		for( x = 0; x < lx; x++ )
 		{
 			int c = map[x+y*lx];
-			printf( "%c", c );
+			//printf( "%c", c );
 			if( c == 'X' ) locations++;
 		}
-		printf( "; %d\n", locations );
+		//printf( "; %d\n", locations );
 	}
 	printf( "%d\n", locations );
 	//printf( "%d %d\n", lx,ly );
