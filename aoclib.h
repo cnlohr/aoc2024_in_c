@@ -60,6 +60,15 @@ void appendToList( int ** list, int * len, int num )
 	*len = lenp1;
 }
 
+void appendToList64( int64_t ** list, int * len, int64_t num )
+{
+	int lenv = *len;
+	int lenp1 = lenv + 1;
+	*list = realloc( *list, sizeof(int64_t) * lenp1 );
+	(*list)[lenv] = num;
+	*len = lenp1;
+}
+
 int gchar( void )
 {
 	if( haslastchar )
@@ -120,6 +129,32 @@ int takeString( const char * str )
 int takeNumber( int * rnum )
 {
 	int num = 0;
+	int numpl = 0;
+	do
+	{
+		int c = gchar();
+		if( c >= '0' && c <= '9' )
+		{
+			num = num * 10 + c - '0';
+			numpl++;
+		}
+		else if( !numpl )
+		{
+			return 0;
+		}
+		else
+		{
+			break;
+		}
+	} while( 1 );
+	unget();
+	*rnum = num;
+	return numpl;
+}
+
+int takeNumber64( int64_t * rnum )
+{
+	int64_t num = 0;
 	int numpl = 0;
 	do
 	{
