@@ -10,7 +10,7 @@ day2 : day2.c
 day2b : day2b.c
 	gcc $(CFLAGS) -o $@ $^
 
-test : day2 day2b input.txt
+test : day2 day2b sample.txt
 	test "$(shell ./day2 < sample.txt)" = "2"
 	test "$(shell ./day2b < sample.txt)" = "4"
 
