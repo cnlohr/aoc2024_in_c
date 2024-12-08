@@ -19,6 +19,7 @@ int takeChar( int c );
 void consumeWhitespace( void );
 void quickSort( int * list, int start, int end );
 void appendToList( int ** list, int * len, int num );
+void appendToList64( int64_t ** list, int * len, int64_t num );
 int takeString( const char * str );
 
 void terror( const char * err );
