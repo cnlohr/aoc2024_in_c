@@ -25,6 +25,10 @@ int takeString( const char * str );
 void terror( const char * err );
 void zdata( void * data, int len );
 
+static double OGGetAbsoluteTime();
+static void StartProfile() __attribute__((constructor));
+static void StopProfile() __attribute__((destructor));
+
 void quickSort( int * list, int start, int end )
 {
     if( start >= end )
@@ -210,6 +214,65 @@ void terror( const char * err )
 void zdata( void * data, int len )
 {
 	memset( data, 0, len );
+}
+
+
+#if defined( WIN32 ) || defined (WINDOWS) || defined( _WIN32)
+static double OGGetAbsoluteTime()
+{
+	static LARGE_INTEGER lpf;
+	LARGE_INTEGER li;
+
+	if( !lpf.QuadPart )
+	{
+		QueryPerformanceFrequency( &lpf );
+	}
+
+	QueryPerformanceCounter( &li );
+	return (double)li.QuadPart / (double)lpf.QuadPart;
+}
+#else
+#include <unistd.h>
+#include <sys/time.h>
+static double OGGetAbsoluteTime()
+{
+	struct timeval tv;
+	gettimeofday( &tv, 0 );
+	return ((double)tv.tv_usec)/1000000. + (tv.tv_sec);
+}
+#endif
+
+static double StartTime;
+static void StartProfile()
+{
+	if( getenv("AOCPROF") )
+		StartTime = OGGetAbsoluteTime();
+}
+
+static void StopProfile()
+{
+	double EndTime;
+	if( StartTime )
+	{
+		EndTime = OGGetAbsoluteTime();
+		int microseconds = (int)((EndTime-StartTime)*1000000);
+
+		char exe[1024] = { 0 };
+		int ret;
+		ret = readlink("/proc/self/exe",exe,sizeof(exe)-1);
+		char * rend = exe;
+		char * t;
+		for( t = exe; *t; t++ )
+		{
+			if( *t == '/' )
+			{
+				*t = 0;
+				rend = t + 1;
+			}
+		}
+
+		fprintf( stderr, "PROFILE,%s,%d\n", rend, microseconds );
+	}
 }
 
 #endif

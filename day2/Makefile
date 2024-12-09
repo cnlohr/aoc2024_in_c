@@ -2,7 +2,7 @@ all : test
 
 .PHONY : test
 
-CFLAGS:=-g -O1 -I..
+CFLAGS:=-g -O3 -I..
 
 day2 : day2.c
 	gcc $(CFLAGS) -o $@ $^
@@ -13,6 +13,10 @@ day2b : day2b.c
 test : day2 day2b sample.txt
 	test "$(shell ./day2 < sample.txt)" = "2"
 	test "$(shell ./day2b < sample.txt)" = "4"
+
+testinput : day2 day2b input.txt
+	test "$(shell ./day2 < input.txt)" = "432"
+	test "$(shell ./day2b < input.txt)" = "488"
 
 clean :
 	rm -rf day2 day2b
