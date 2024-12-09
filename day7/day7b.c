@@ -18,24 +18,31 @@ int experiment( int64_t * listremain, int nremain, int64_t nmaxanswer )
 	if( nremain > 31 ) terror( "too many numbers" );
 	int o;
 	int test;
-	uint64_t ntestmask;
-	for( ntestmask = 0; ntestmask < 1<<(2*(nremain-1)); ntestmask++ )
+
+	int64_t permutations = 1;
+	int k;
+	for( k = 0; k < nremain-1; k++ )
+		permutations *= 3;
+
+	// Before early exit:
+	// 482407
+
+	for( int64_t permutation = 0; permutation < permutations; permutation++ )
 	{
-		
+		int64_t tperm = permutation;		
 		int64_t running = listremain[0];
 		for( o = 1; o < nremain; o++ )
 		{
-			int op = (ntestmask >> ((o-1)*2))&3;
+			int op = tperm % 3;
 			//printf( "[%d,%d,%d]", ntestmask, op, o );
 			int64_t v = listremain[o];
-			if( op == 0 )
-				running = running * v;
-			else if( op == 1 )
-				running = running + v;
-			else if( op == 2 )
-				running = running * rebase10(v) + v;
-			else
-				break;
+			switch( op )
+			{
+			case 0:	running = running * v; break;
+			case 1: running = running + v; break;
+			case 2: running * rebase10(v) + v; break;
+			}
+			tperm /= 3;
 		}
 		if( o == nremain && running == nmaxanswer ) return 1;
 		//printf( " T %08x  %d\n", ntestmask, running );
