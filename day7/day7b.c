@@ -24,29 +24,39 @@ int experiment( int64_t * listremain, int nremain, int64_t nmaxanswer )
 	for( k = 0; k < nremain-1; k++ )
 		permutations *= 3;
 
+	// GCC 11, -O3, x86
+	// Switch statement: 574869
 	// (If tree)Before early exit: 476869
 	// Early exit on overflow: 421730
-	// Switch statement: 574869
+	// Computed Goto + Early Exit: 423552
+	// Computed Goto, No Early check: 388019
 	for( int64_t permutation = 0; permutation < permutations; permutation++ )
 	{
 		int64_t tperm = permutation;		
 		int64_t running = listremain[0];
-		for( o = 1; o < nremain; o++ )
-		{
-			int op = tperm % 3;
-			//printf( "[%d,%d,%d]", ntestmask, op, o );
-			int64_t v = listremain[o];
-			if( op == 0 )
-				running = running * v;
-			else if( op == 1 )
-				running = running + v;
-			else if( op == 2 )
-				running = running * rebase10(v) + v;
-			else
-				break;
-			//if( running > nmaxanswer ) break;
-			tperm /= 3;
-		}
+
+		o = 1;
+		int tpo;
+		static void *table[] = { &&c0, &&c1, &&c2 };
+		tpo = tperm % 3; tperm/=3;
+		goto *table[tpo];
+c0:
+		running = running * listremain[o++];
+		tpo = tperm % 3; tperm/=3;
+		if( o == nremain ) goto done;
+		goto *table[tpo];
+c1:
+		running = running + listremain[o++];
+		tpo = tperm % 3; tperm/=3;
+		if( o == nremain ) goto done;
+		goto *table[tpo];
+c2:
+		int v = listremain[o++];
+		running = running * rebase10(v) + v;
+		tpo = tperm % 3; tperm/=3;
+		if( o == nremain ) goto done;
+		goto *table[tpo];
+done:
 		if( o == nremain && running == nmaxanswer ) return 1;
 		//printf( " T %08x  %d\n", ntestmask, running );
 	}
