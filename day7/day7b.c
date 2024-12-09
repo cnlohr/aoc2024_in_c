@@ -24,9 +24,9 @@ int experiment( int64_t * listremain, int nremain, int64_t nmaxanswer )
 	for( k = 0; k < nremain-1; k++ )
 		permutations *= 3;
 
-	// Before early exit:
-	// 482407
-
+	// (If tree)Before early exit: 476869
+	// Early exit on overflow: 421730
+	// Switch statement: 574869
 	for( int64_t permutation = 0; permutation < permutations; permutation++ )
 	{
 		int64_t tperm = permutation;		
@@ -36,12 +36,15 @@ int experiment( int64_t * listremain, int nremain, int64_t nmaxanswer )
 			int op = tperm % 3;
 			//printf( "[%d,%d,%d]", ntestmask, op, o );
 			int64_t v = listremain[o];
-			switch( op )
-			{
-			case 0:	running = running * v; break;
-			case 1: running = running + v; break;
-			case 2: running * rebase10(v) + v; break;
-			}
+			if( op == 0 )
+				running = running * v;
+			else if( op == 1 )
+				running = running + v;
+			else if( op == 2 )
+				running = running * rebase10(v) + v;
+			else
+				break;
+			//if( running > nmaxanswer ) break;
 			tperm /= 3;
 		}
 		if( o == nremain && running == nmaxanswer ) return 1;
