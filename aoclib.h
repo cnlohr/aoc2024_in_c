@@ -15,6 +15,7 @@ void unget( void );
 int iseof( void );
 int peekChar( void );
 int takeNumber( int * n );
+int takeNumber64( int64_t * rnum );
 int takeChar( int c );
 void consumeWhitespace( void );
 void quickSort( int * list, int start, int end );
