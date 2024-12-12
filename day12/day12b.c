@@ -2,16 +2,14 @@
 #include <stdint.h>
 #include <string.h>
 
-
 #define CNRBTREE_IMPLEMENTATION
 #include "cnrbtree.h"
 
-
 CNRBTREETEMPLATE( int64_t, int64_t, RBptrcmp, RBptrcpy, RBnullop );
-typedef cnrbtree_int64_tint64_t intintmap;
+CNRBTREETEMPLATE( int64_t, rbset_null_t, RBptrcmp, RBptrcpy, RBnullop );
 
-intintmap * cleartree;
-intintmap * parametermap;
+cnrbtree_int64_tint64_t * cleartree;
+cnrbtree_int64_trbset_null_t * parametermap;
 
 int * map;
 int maplen;
@@ -20,6 +18,8 @@ int mapy;
 
 #define MAP(x,y) (*ml( x, y))
 #define COORD(x,y) ( ((uint64_t)x)  | (((uint64_t)y)<<32ULL) )
+#define PARAMETERCOORD(x,y,dir) ( (((uint64_t)x)<<2)  | (((uint64_t)y)<<32ULL) | (((uint64_t)dir)) )
+
 int valid( int x, int y )
 {
 	return ( x >= 0 && y >= 0 && x < mapx && y < mapy );
@@ -36,8 +36,8 @@ int * ml( int x, int y )
 	}
 }
 
-static const int dirx[] = { -1, 0, 1, 0 };
-static const int diry[] = { 0,  1, 0,-1 };
+static const int dirx[] = { 1, 0, -1, 0 };
+static const int diry[] = { 0, 1, 0, -1 };
 
 void ComputeAP( int x, int y, int * a, int * p )
 {
@@ -59,7 +59,7 @@ void ComputeAP( int x, int y, int * a, int * p )
 		}
 		else if( cc != tc )
 		{
-			RBA( parametermap, COORD( tx, ty ) ) = 1;
+			RBA( parametermap, PARAMETERCOORD( x, y, dir ) );
 			(*p)++;
 		}
 	}
@@ -72,34 +72,29 @@ int ComputeSides()
 	while( parametermap->size )
 	{
 		// Take top, left-most parameter element.
-		cnrbtree_int64_tint64_t_node * n = tree->begin;
-		x = n->key & 0xffffffff;
-		y = n->key >> 32;
-		int dir;
-		for( dir = 0; dir < 4; dir++ )
+		cnrbtree_int64_trbset_null_t_node * n = parametermap->begin;
+		x = (n->key >> 2 ) & 0x3fffffff;
+		y = (n->key >> 32) & 0xfffffff;
+		int odir = n->key & 3;
+		RBREMOVE( parametermap, n );
+
+		// Guaranteed to be top-left, can only go right or down, depending on escapement direction.
+		int checkdir = (odir & 1) ? 0 : 1;
+
+		int len = 1;
+		while(1)
 		{
-			int tx = x + dirx[dir];
-			int ty = y + diry[dir];
-			if( RBHAS( parametermap, COORD( tx, ty ) )
+			x += dirx[checkdir];
+			y += diry[checkdir];
+			if( !valid( x, y ) ) break;
+			n = RBGET( parametermap, PARAMETERCOORD( x, y, odir ) );
+			if( !n )
 				break;
+			RBREMOVE( parametermap, n );
 		}
-
-		if( dir == 4 )
-		{
-			terror( "Parameter broken\n" );
-		}
-
-		
-
-		RBFOREACH( int64int64_t, parametermap, n )
-		{
-			
-			break;
-		}
+		sides++;
 	}
-	int64_t firstp = 
-	RBFOREACH( int64_tint64_t, cleartree, n )
-
+	return sides;
 }
 
 int main()
@@ -131,6 +126,7 @@ int main()
 	}
 
 	cleartree = cnrbtree_int64_tint64_t_create();
+	parametermap = cnrbtree_int64_trbset_null_t_create();
 
 	int x, y;
 	for( y = 0; y < mapy; y++ )
@@ -147,7 +143,8 @@ int main()
 				// Part 1
 				//sum += ((int64_t)a)*(int64_t)p;
 
-				int sides = ComputeSides();
+				sum += a * ComputeSides();
+
 				RBFOREACH( int64_tint64_t, cleartree, n )
 				{
 					int64_t c = n->key;
