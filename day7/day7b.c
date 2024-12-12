@@ -55,6 +55,7 @@ int experiment( int64_t * listremain, int nremain, int64_t answer )
 			else if( op == 2 )
 				last = last * rebase10(val) + val;
 			cribbed[b] = last;
+			if( last > answer ) break;
 		}
 
 		if( last == answer )

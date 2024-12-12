@@ -7,7 +7,7 @@ CFLAGS:=-g -O4 -I..
 day11 : day11.c
 	gcc $(CFLAGS) -o $@ $^
 
-day11b : day11.c
+day11b : day11b.c
 	gcc $(CFLAGS) -o $@ $^ -DPARTB=1
 
 test : day11 day11b
