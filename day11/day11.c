@@ -108,11 +108,11 @@ int main()
 	}
 
 	int step;
-	for( step = 0; step < 75; step++ )
+	for( step = 0; step < 25; step++ )
 	{
 		blink( head );
-		printf( "%d/%d\n", step, linkedlist_count( head ) );
+		//printf( "%d/%d\n", step, linkedlist_count( head ) );
 	}
 	//linkedlist_print( head );
-	printf( "Stones: %d\n", linkedlist_count( head ) );
+	printf( "%d\n", linkedlist_count( head ) );
 }
