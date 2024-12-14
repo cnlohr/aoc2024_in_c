@@ -136,6 +136,8 @@ int takeNumber( int * rnum )
 {
 	int num = 0;
 	int numpl = 0;
+	int nneg = 1;
+
 	do
 	{
 		int c = gchar();
@@ -146,6 +148,7 @@ int takeNumber( int * rnum )
 		}
 		else if( !numpl )
 		{
+			if( c == '-' ) { nneg = -1; continue; }
 			return 0;
 		}
 		else
@@ -154,7 +157,7 @@ int takeNumber( int * rnum )
 		}
 	} while( 1 );
 	unget();
-	*rnum = num;
+	*rnum = num * nneg;
 	return numpl;
 }
 
@@ -162,6 +165,7 @@ int takeNumber64( int64_t * rnum )
 {
 	int64_t num = 0;
 	int numpl = 0;
+	int nneg = 1;
 	do
 	{
 		int c = gchar();
@@ -172,6 +176,7 @@ int takeNumber64( int64_t * rnum )
 		}
 		else if( !numpl )
 		{
+			if( c == '-' ) { nneg = -1; continue; }
 			return 0;
 		}
 		else
@@ -180,7 +185,7 @@ int takeNumber64( int64_t * rnum )
 		}
 	} while( 1 );
 	unget();
-	*rnum = num;
+	*rnum = num * nneg;
 	return numpl;
 }
 
