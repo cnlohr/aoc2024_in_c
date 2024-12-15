@@ -1,4 +1,4 @@
-dall : day12 day12b
+all : day12 day12b
 
 .PHONY : test
 

@@ -11,3 +11,7 @@ In order to iterate more smoothly, I am using this as a test suite, as per the g
 
 We'll see how far I get.
 
+
+To add:
+ * Char-based list adding (not just int)
+ * Match char compare - i.e. Is char # % . etc... yes no.
