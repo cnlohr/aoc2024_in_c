@@ -16,7 +16,7 @@ day14s : day14.c
 day14bs : day14.c
 	gcc $(CFLAGS) -o $@ $^ -DPARTB=1 -DSAMPLE=1
 
-test : day14 day14b
+test : day14s
 	test "$(shell ./day14s < sample.txt)" = "12"
 #	test "$(shell ./day14bs < sample.txt)" = "1406"
 
