@@ -11,8 +11,8 @@ day13b : day13.c
 	gcc $(CFLAGS) -o $@ $^ -DPARTB=1
 
 test : day13 day13b
-	test "$(shell ./day13 < sample.txt)" = "1930"
-	test "$(shell ./day13b < sample.txt)" = "1306"
+	test "$(shell ./day13 < sample.txt)" = "480"
+	test "$(shell ./day13b < sample.txt)" = "875318608908"
 
 testinput : day13 day13b
 	test "$(shell ./day13 < input.txt)" = "29388"
