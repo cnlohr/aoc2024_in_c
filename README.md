@@ -15,3 +15,5 @@ We'll see how far I get.
 To add:
  * Char-based list adding (not just int)
  * Match char compare - i.e. Is char # % . etc... yes no.
+
+ * Create a RB Tree Multimap.
