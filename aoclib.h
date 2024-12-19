@@ -21,11 +21,14 @@ void consumeWhitespace( void );
 void quickSort( int * list, int start, int end );
 void appendToList( int ** list, int * len, int num );
 void appendToListC( unsigned char ** list, int * len, int num );
+void appendToListP( void *** list, int * len, void * num );
 void appendToList64( int64_t ** list, int * len, int64_t num );
 int takeString( const char * str );
 
 void terror( const char * err );
 void zdata( void * data, int len );
+
+int strsubmatch( const char * shorter, const char * longer );
 
 static double OGGetAbsoluteTime();
 static void StartProfile() __attribute__((constructor));
@@ -72,6 +75,15 @@ void appendToListC( unsigned char ** list, int * len, int num )
 	int lenv = *len;
 	int lenp1 = lenv + 1;
 	*list = realloc( *list, lenp1 );
+	(*list)[lenv] = num;
+	*len = lenp1;
+}
+
+void appendToListP( void *** list, int * len, void * num )
+{
+	int lenv = *len;
+	int lenp1 = lenv + 1;
+	*list = realloc( *list, lenp1 * sizeof( void** ) );
 	(*list)[lenv] = num;
 	*len = lenp1;
 }
@@ -289,6 +301,18 @@ static void StopProfile()
 
 		fprintf( stderr, "PROFILE,%s,%d\n", rend, microseconds );
 	}
+}
+
+int strsubmatch( const char * shorter, const char * longer )
+{
+	while( *shorter == *longer && *shorter && *longer )
+	{
+		shorter++;
+		longer++;
+	}
+	if( *shorter == 0 ) return 0;
+	else if( *longer ) return 1;
+	else return -1;
 }
 
 #endif

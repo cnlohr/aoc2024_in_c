@@ -1,6 +1,10 @@
 // I AM NOT PROUD OF THIS. I AM REALY NOT PROUD OF THIS.
 // I really wish I had a precanned priority queue
-// or an RB Multimap.
+// or an RB Multimap
+// 
+// NOTE: OMG I HAD THE ANSWER THE WHOLE TIME: RBptrcmpnomatch
+//
+// Doesn't actually work without manual fixup.
 #include "aoclib.h"
 #include <stdint.h>
 #include <string.h>
@@ -35,6 +39,7 @@ int reindeerendy;
 #define COST(x,y,d) (*ml3( cost, x, y, d ))
 
 #define COSTANY(x,y,dummy) (COSTANYFN( cost, x, y ))
+#define COSTALL(x,y,dummy) (COSTALLFN( cost, x, y ))
 
 #define COORD(x,y,d) ( ((uint64_t)x<<2)  | (((uint64_t)y)<<32ULL) | (d) )
 
@@ -65,12 +70,21 @@ int64_t * ml3( int64_t * map, int x, int y, int d )
 		return &dead;
 	}
 }
+
 int64_t COSTANYFN( int64_t * cost, int x, int y) {
-int d;
-int64_t r = INT_MAX;
-for( d = 0; d < 4; d++ )
-	if(COST( x, y, d ) > r ) r = COST(x, y, d );
-return r;
+	int d;
+	int64_t r = INT_MAX;
+	for( d = 0; d < 4; d++ )
+		if(COST( x, y, d ) > r ) r = COST(x, y, d );
+	return r;
+}
+
+int64_t COSTALLFN( int64_t * cost, int x, int y) {
+	int d;
+	int64_t r = 0;
+	for( d = 0; d < 4; d++ )
+		if(COST( x, y, d ) < r ) r = COST(x, y, d );
+	return r;
 }
 
 static const int dirx[] = { -1, 0, 1, 0 };
@@ -211,9 +225,9 @@ int main()
 		if( next == '.' )
 		{
 			int64_t newkey = COORD( x + dx, y + dy, d );
-			if( ( COSTANY( x + dx, y + dy, d ) >= tcost + 1 ) )
+			if( ( COST( x + dx, y + dy, d ) >= tcost + 1 ) )
 			{
-				if( COST( x + dx, y + dy, d ) > tcost + 1 )
+				if( COSTALL( x + dx, y + dy, d ) > tcost + 1 )
 				{
 					backtrackbitmap[x+dx+(y+dy)*mapx] = 0;
 				}
@@ -232,7 +246,7 @@ int main()
 			if( ( COST( x, y, nd ) >= ncost ) )
 			{
 				RBA( traversallist, newkey ) = ncost;
-				if( COST( x, y, nd ) > ncost ) COST( x, y, nd ) = ncost;
+				COST( x, y, nd ) = ncost;
 			}
 		}
 		
@@ -260,4 +274,8 @@ int main()
 	printf( "%ld\n", ocost );
 }
 // 580 is too high.
-
+// 580 - 38 ???
+// 542 too high.
+// -10
+// 532 too high
+// 528 << Not 528
