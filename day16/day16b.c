@@ -13,17 +13,13 @@
 #define CNRBTREE_IMPLEMENTATION
 #include "cnrbtree.h"
 
-
-CNRBTREETEMPLATE( int64_t, int64_t, RBptrcmp, RBptrcpy, RBnullop );
-typedef cnrbtree_int64_tint64_t intintmap;
+typedef uint64_t u64;
+CNRBTREETEMPLATE( u64, u64, RBptrcmpnomatch, RBptrcpy, RBnullop );
 
 int64_t * map;
 int maplen;
 int mapx;
 int mapy;
-
-int64_t *backtrackbitmap;
-int backtrackbitmaplen;
 
 int64_t * cost;
 int costlen;
@@ -71,22 +67,6 @@ int64_t * ml3( int64_t * map, int x, int y, int d )
 	}
 }
 
-int64_t COSTANYFN( int64_t * cost, int x, int y) {
-	int d;
-	int64_t r = INT_MAX;
-	for( d = 0; d < 4; d++ )
-		if(COST( x, y, d ) > r ) r = COST(x, y, d );
-	return r;
-}
-
-int64_t COSTALLFN( int64_t * cost, int x, int y) {
-	int d;
-	int64_t r = 0;
-	for( d = 0; d < 4; d++ )
-		if(COST( x, y, d ) < r ) r = COST(x, y, d );
-	return r;
-}
-
 static const int dirx[] = { -1, 0, 1, 0 };
 static const int diry[] = { 0,  1, 0,-1 };
 
@@ -103,34 +83,46 @@ void PrintMap( int64_t * map )
 	}
 }
 
-void PrintMapB( int64_t * map )
+void PrintMapC( int64_t * cost )
 {
 	int x, y;
 	for( y = 0; y < mapy; y++ )
 	{
 		for( x = 0; x < mapx; x++ )
 		{
-			printf( "%x", (char)MAP(x,y) );
+			if( COST(x,y,0) < 100000 ) printf( "%6ld", COST(x,y,0) ); else printf( "      " );
+			if( COST(x,y,1) < 100000 ) printf( "%6ld", COST(x,y,1) ); else printf( "      " );
+			if( COST(x,y,2) < 100000 ) printf( "%6ld", COST(x,y,2) ); else printf( "      " );
+			if( COST(x,y,3) < 100000 ) printf( "%6ld", COST(x,y,3) ); else printf( "      " );
+			printf("|");
 		}
 		printf( "\n" );
 	}
 }
 
-int BackTrack( int x, int y, int sx, int sy )
+int BackTrack( int x, int y, int d, int sx, int sy )
 {
 	if( x == sx && y == sy ) return 0;
 	MAP(x,y) = 'O';
-	int r = 1;
-	int d = 0;
-	int64_t bb = backtrackbitmap[x+y*mapx];
-	backtrackbitmap[x+y*mapx] = 0;
-	//printf( "* %d %ld (%d %d)\n", x+y*mapx, backtrackbitmap[x+y*mapx], x, y );
-	for( d = 0; d < 4; d++ )
+
+	int r = 0;
+	int tc = COST( x, y, d );
+	int td;
+	for( td = 0; td < 4; td++ )
 	{
-		if( bb & (1<<d) )
+		if( td == d )
 		{
-			//printf( "B %d %d\n", x-dirx[d], y-diry[d] );
-			r += BackTrack( x-dirx[d], y-diry[d], sx, sy );
+			int nx = x - dirx[td];
+			int ny = y - diry[td];
+			int nc = COST( nx, ny, td );
+			if( nc == tc-1 )
+				r += BackTrack( nx, ny, td, sx, sy );
+		}
+		else if( ( td + d ) & 1 )
+		{
+			int nc = COST( x, y, td );
+			if( nc == tc-1000 )
+				r += BackTrack( x, y, td, sx, sy );
 		}
 	}
 	return r;
@@ -180,60 +172,45 @@ int main()
 		appendToList64( &cost, &costlen, INT_MAX );
 		appendToList64( &cost, &costlen, INT_MAX );
 		appendToList64( &cost, &costlen, INT_MAX );
-		appendToList64( &backtrackbitmap, &backtrackbitmaplen, 0 );
 		tx++;
 	}
 
-	intintmap * traversallist = cnrbtree_int64_tint64_t_create();
+	cnrbtree_u64u64 * traversallist = cnrbtree_u64u64_create();
 
 	int64_t start = COORD(reindeerx, reindeery, reindeerd);
-	RBA( traversallist, start ) = 0;
+	RBA( traversallist, 0 ) = start;
 
 	uint64_t ocost = 0;
 	int64_t endkey;
 	while(1)
 	{
-		cnrbtree_int64_tint64_t_node * i = traversallist->begin;
-		int count = 0;
-		RBFOREACH( int64_tint64_t, traversallist, n )
+		cnrbtree_u64u64_node * i = traversallist->begin;
+		if( RBISNIL( i ) )
 		{
-			if( n->data < i->data ) i = n;
-			count++;
+			break;
 		}
-		if( count == 0 ) { endkey = -1; break; }
-		int d = i->key & 3;
-		int x = (i->key >> 2) & 0x3fffffff;
-		int y = (i->key) >> 32;
+		int d = i->data & 3;
+		int x = (i->data >> 2) & 0x3fffffff;
+		int y = (i->data) >> 32;
 		int dx = dirx[d];
 		int dy = diry[d];
-		int tcost = i->data;
+		int tcost = i->key;
 		int next = MAP( x + dx, y + dy );
 		int ths = MAP( x, y ); // probably unused.
 		int matching = 0;
-		printf( "%d %d %c\n", x, y, next );
 		// Can we go forward?
 		if( next == 'E' )
 		{
-			if( COST( x + dx, y + dy, d ) > tcost + 1 )
-			{
-				backtrackbitmap[x+dx+(y+dy)*mapx] = 0;
-			}
-			backtrackbitmap[x+dx+(y+dy)*mapx] |= 1<<d;
-			printf( "E AT %d %d %d\n", x, y, x+dx+(y+dy)*mapx);
-			break;
+			COST( x + dx, y+ dy, d ) = tcost + 1;
 		}
 		if( next == '.' )
 		{
 			int64_t newkey = COORD( x + dx, y + dy, d );
-			if( ( COST( x + dx, y + dy, d ) >= tcost + 1 ) )
+			int ncost = tcost + 1;
+			if( ( COST( x + dx, y + dy, d ) >= ncost ) )
 			{
-				if( COSTALL( x + dx, y + dy, d ) > tcost + 1 )
-				{
-					backtrackbitmap[x+dx+(y+dy)*mapx] = 0;
-				}
-				backtrackbitmap[x+dx+(y+dy)*mapx] |= 1<<d;
-				RBA( traversallist, newkey ) = tcost + 1;
-				if( COST( x + dx, y + dy, d ) > tcost+1 ) COST( x + dx, y+dy, d ) = tcost+1;
+				RBA( traversallist, ncost ) = newkey;
+				COST( x + dx, y+dy, d ) = ncost;
 			}
 		}
 		int nd;
@@ -245,7 +222,7 @@ int main()
 			int64_t newkey = COORD( x, y, nd );
 			if( ( COST( x, y, nd ) >= ncost ) )
 			{
-				RBA( traversallist, newkey ) = ncost;
+				RBA( traversallist, ncost ) = newkey;
 				COST( x, y, nd ) = ncost;
 			}
 		}
@@ -253,11 +230,18 @@ int main()
 		RBREMOVE( traversallist, i );
 	}
 
-//	RevTrav( completelistprevlist, endkey, start );
+	//PrintMapC( cost );
 
-	PrintMapB( backtrackbitmap );
-
-	BackTrack( reindeerendx, reindeerendy, reindeerx, reindeery );
+	{
+		int d;
+		int minend = INT_MAX;
+		for( d = 0; d < 4; d++ )
+			if( COST( reindeerendx, reindeerendy, d ) < minend )
+				minend = COST( reindeerendx, reindeerendy, d );
+		for( d = 0; d < 4; d++ )
+			if( COST( reindeerendx, reindeerendy, d ) == minend )
+				BackTrack( reindeerendx, reindeerendy, d, reindeerx, reindeery );
+	}
 
 	int x, y;
 
@@ -268,9 +252,9 @@ int main()
 		ocost += 'O' == c || 'S' == c;
 	}
 
-	PrintMap( map );
+	//PrintMap( map );
 	//SolveMap( reindeerx, reindeery, reindeerd, reindeerendx, reindeerendy );
-	printf( "%lx\n", endkey );
+	//printf( "%lx\n", endkey );
 	printf( "%ld\n", ocost );
 }
 // 580 is too high.
