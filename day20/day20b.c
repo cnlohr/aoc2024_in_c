@@ -116,6 +116,39 @@ cnrbtree_u64u8 * solutionlist;
 
 void ComputeSavingsFrom( int sx, int sy, int x, int y, int cheatamount, int maxcheat, int savingsatstart )
 {
+	int extent = maxcheat - cheatamount+1;
+	int dx, dy;
+	for( dy = -extent; dy <= extent; dy++ )
+	{
+		int def = (dy < 0 ) ? -dy : dy;
+		int extentx = extent - def;
+		int ny = sy + dy;
+		if( ny <=0 || ny >= mapy-1 ) continue;
+		for( dx = -extentx; dx <= extentx; dx++ )
+		{
+			int defx = (dx < 0) ?  -dx: dx;
+			int distance = defx + def;
+			int nx = sx + dx;
+			if( nx <= 0 || nx >= mapx - 1 ) continue;
+
+			//if( distance > maxcheat ) continue;
+			{
+				int ec = COST( nx, ny );
+				int savings = ec - savingsatstart - distance+1;
+				if( ec < INT_MAX && savings > 0)
+				{
+					if( savings > 0 )
+					{
+						//RBA( savingses, savings )++;
+					}
+					if( savings >= 100 ) sav100++;
+					if( savings >= 10 ) sav10++;
+				}
+			}
+		}
+	}
+#if 0
+	// Old way - do DFS directly.
 	cnrbtree_u64u64 * tocalc = cnrbtree_u64u64_create();
 	cnrbtree_u64u64_node * n = tocalc->access( tocalc, cheatamount );
 	n->data = COORD( x, y );
@@ -165,6 +198,7 @@ void ComputeSavingsFrom( int sx, int sy, int x, int y, int cheatamount, int maxc
 		n = tocalc->begin;
 	} while( !RBISNIL( n ) );
 	RBDESTROY( tocalc );
+#endif
 }
 
 
