@@ -154,6 +154,7 @@ int main()
 
 	int sy, sx;
 	int sav100 = 0;
+	int sav10 = 0;
 
 	cnrbtree_intint * savingses = cnrbtree_intint_create();
 
@@ -192,38 +193,16 @@ int main()
 					RBA( savingses, savings )++;
 				}
 				if( savings >= 100 ) sav100++;
-				//printf( "From: %d, %d to %d, %d breach %d\n", sx, sy, x, y, mmc );
-
-#if 0
-				if( savings == 4 )
-				{
-					int kx, ky;
-					for( ky = 0; ky < mapy; ky++ )
-					{
-						for( kx = 0; kx < mapx; kx++ )
-						{
-							if( COST( kx, ky ) == INT_MAX )
-								printf( "%c   ", MAP( kx, ky ) );
-							else
-								printf( "%c%3d", MAP( kx, ky ), COST( kx, ky ) );
-						}
-						printf( "\n" );
-					}
-				}
-#endif
-				//if( savings )
-				//	printf( "OCOST %2d [%d, %d][%d, %d][%d, %d]: %d / %d\n", savings, sx, sy, x, y, nx, ny, COST( endx, endy ), tc);
-				//memcpy( cost, dupcost, costlen * sizeof(cost[0]) );
-				//memcpy( map, dupmap, maplen*sizeof(map[0]) );
+				if( savings >= 10 ) sav10++;
 			}
 		}
 	}
 
-	RBFOREACH( intint, savingses, i )
-	{
-		fprintf( stderr, "%d cheats that save %d\n", i->data, i->key );
-	}
-	printf( "%d\n", sav100 );
+	//RBFOREACH( intint, savingses, i )
+	//{
+	//	fprintf( stderr, "%d cheats that save %d\n", i->data, i->key );
+	//}
+	printf( "%d,%d\n", sav10, sav100 );
 	RBDESTROY( savingses );
 	//free( dupmap );
 	//free( dupcost );

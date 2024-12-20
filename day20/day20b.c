@@ -31,6 +31,7 @@ int endx;
 int endy;
 
 int sav100 = 0;
+int sav10 = 0;
 cnrbtree_intint * savingses;
 
 
@@ -156,6 +157,7 @@ void ComputeSavingsFrom( int sx, int sy, int x, int y, int cheatamount, int maxc
 							RBA( savingses, savings )++;
 						}
 						if( savings >= 100 ) sav100++;
+						if( savings >= 10 ) sav10++;
 					}
 				}
 			}
@@ -254,11 +256,9 @@ int main()
 		}
 	}
 
-	RBFOREACH( intint, savingses, i )
-	{
-		fprintf( stderr, "%d cheats that save %d\n", i->data, i->key );
-	}
-	printf( "%d\n", sav100 );
+	//RBFOREACH( intint, savingses, i )
+	//	fprintf( stderr, "%d cheats that save %d\n", i->data, i->key );
+	printf( "%d,%d\n", sav10, sav100 );
 	RBDESTROY( savingses );
 	//free( dupmap );
 	//free( dupcost );
