@@ -16,7 +16,7 @@ test : day20 day20b
 
 testinput : day20 day20b
 	test "$(shell ./day20 < input.txt)" = "319"
-	test "$(shell ./day20b < input.txt)" = "692575723305545"
+	test "$(shell ./day20b < input.txt)" = "985332"
 
 clean :
 	rm -rf day20 day20b

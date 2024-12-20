@@ -118,7 +118,6 @@ void ComputeSavingsFrom( int sx, int sy, int x, int y, int cheatamount, int maxc
 	cnrbtree_u64u64 * tocalc = cnrbtree_u64u64_create();
 	cnrbtree_u64u64_node * n = tocalc->access( tocalc, cheatamount );
 	n->data = COORD( x, y );
-printf( "------------------------%d %d\n", x, y );
 	do
 	{
 		int x = (n->data) & 0xffffffff;
@@ -126,24 +125,21 @@ printf( "------------------------%d %d\n", x, y );
 		int lcheatamt = n->key;
 		RBREMOVE( tocalc, n );
 		int d;
-		//printf( "Y %d %d %d (%d)\n", x, y, lcheatamt, tocalc->size );
 		for( d = 0; d < 4; d++ )
 		{
 			int dx = dirx[d];
 			int dy = diry[d];
 			int nx = x + dx;
 			int ny = y + dy;
-			//printf( "%d %d %d\n", nx, ny, VISIT( nx, ny ) );
 			if( nx <= 0 || nx >= mapx-1 || ny <=0 || ny >= mapy-1 ) continue;
 
 			if( VISIT( nx, ny ) >= INT_MAX )
 			{
 				VISIT( nx, ny ) = 0;
-				//printf( "VV %d %d\n", nx, ny );
 
 				int next = MAP( nx, ny );
 
-				if( lcheatamt+1 <= maxcheat ) // && next == '#' 
+				if( lcheatamt+1 <= maxcheat )
 				{
 					RBA( tocalc, lcheatamt+1 ) = COORD( nx, ny );
 				}
@@ -152,10 +148,9 @@ printf( "------------------------%d %d\n", x, y );
 				{
 					RBA( solutionlist, QP( sx, sy, nx, ny ) ) = 1;
 					int ec = COST( nx, ny );
-					int savings = ec - savingsatstart - 1 - lcheatamt;
+					int savings = ec - savingsatstart - lcheatamt;
 					if( ec < INT_MAX && savings > 0)
 					{
-						printf( "-%c%c %d %d @ %d %d -> %d %d SAVE: %d\n", next, MAP(sx,sy), ec, savingsatstart, sx, sy, nx, ny, ec - savingsatstart - 2 );
 						if( savings > 0 )
 						{
 							RBA( savingses, savings )++;
@@ -168,48 +163,6 @@ printf( "------------------------%d %d\n", x, y );
 		n = tocalc->begin;
 	} while( !RBISNIL( n ) );
 	RBDESTROY( tocalc );
-
-/*
-	if( VISIT( x, y ) < INT_MAX ) 
-
-	if( MAP( x, y ) == '.' )
-	{
-		return;
-	}
-
-	int d;
-	for( d = 0; d < 4; d++ )
-	{
-		int dx = dirx[d];
-		int dy = diry[d];
-		int nx = x + dx;
-		int ny = y + dy;
-
-		if( nx <= 0 || nx >= mapx-1 || ny <=0 || ny >= mapy-1 ) continue;
-		ComputeSavingsFrom( nx, ny, cheatleft-1, savingsatstart );
-#if 0
-		if( savings == 4 )
-		{
-			int kx, ky;
-			for( ky = 0; ky < mapy; ky++ )
-			{
-				for( kx = 0; kx < mapx; kx++ )
-				{
-					if( COST( kx, ky ) == INT_MAX )
-						printf( "%c   ", MAP( kx, ky ) );
-					else
-						printf( "%c%3d", MAP( kx, ky ), COST( kx, ky ) );
-				}
-				printf( "\n" );
-			}
-		}
-#endif
-		//if( savings )
-		//	printf( "OCOST %2d [%d, %d][%d, %d][%d, %d]: %d / %d\n", savings, sx, sy, x, y, nx, ny, COST( endx, endy ), tc);
-		//memcpy( cost, dupcost, costlen * sizeof(cost[0]) );
-		//memcpy( map, dupmap, maplen*sizeof(map[0]) );
-	}
-*/
 }
 
 
@@ -275,9 +228,16 @@ int main()
 	{
 		for( sx = 1; sx < mapx-1; sx++ )
 		{
-			if( MAP( sx, sy ) == '#' ) continue;
+			//if( MAP( sx, sy ) == '#' ) continue;
 			int tc = COST( sx, sy );
 			if( tc >= INT_MAX ) continue;
+
+			int n = 0;
+			for( n = 0; n < visitlistlen; n++ )
+				visitlist[n] = INT_MAX;
+			ComputeSavingsFrom( sx, sy, sx, sy, 1, 20, tc );
+
+#if 0
 			int d;
 			for( d = 0; d < 4; d++ )
 			{
@@ -286,13 +246,11 @@ int main()
 				if( nx <= 0 || nx >= mapx-1 || ny <=0 || ny >= mapy-1 ) continue;
 				if( MAP( nx, ny ) == '#' )
 				{
-					int n = 0;
-					for( n = 0; n < visitlistlen; n++ )
-						visitlist[n] = INT_MAX;
 					printf( "TC: %d\n", tc );
 					ComputeSavingsFrom( sx, sy, nx, ny, 1, 19, tc );
 				}
 			}
+#endif
 		}
 	}
 
