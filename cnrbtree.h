@@ -454,10 +454,10 @@ CNRBTREE_GENERIC_DECORATOR void cnrbtree_generic_removebase( cnrbtree_generic * 
 {
 	T->size--;
 
-    if(z == T->begin)
-        T->begin = cnrbtree_generic_next(T, z);
-    if(z == T->tail)
-        T->tail = cnrbtree_generic_prev(T, z);
+	if(z == T->begin)
+		T->begin = cnrbtree_generic_next(T, z);
+	if(z == T->tail)
+		T->tail = cnrbtree_generic_prev(T, z);
 
 	cnrbtree_generic_node * nil = &cnrbtree_nil;
 	cnrbtree_generic_node * x;
@@ -590,6 +590,8 @@ CNRBTREE_GENERIC_DECORATOR void cnrbtree_generic_removebase( cnrbtree_generic * 
 		T->node = nil;
 	}
 
+	CNRBTREE_FREE( z );
+
 	return;
 }
 
@@ -679,7 +681,6 @@ CNRBTREE_GENERIC_DECORATOR void cnrbtree_generic_removebase( cnrbtree_generic * 
 		cnrbtree_##key_t##data_t##_node * nil = (cnrbtree_##key_t##data_t##_node*)&cnrbtree_nil; \
 		cnrbtree_##key_t##data_t##_node * tmp = 0; \
 		cnrbtree_##key_t##data_t##_node * tmpnext = 0; \
-		cnrbtree_##key_t##data_t##_node * child; \
 		if( tree->node == nil ) return; \
 		tmp = tree->node; \
 		int cmp; \

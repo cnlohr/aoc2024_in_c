@@ -143,7 +143,7 @@ int peekChar( void )
 int takeString( const char * str )
 {
 	int c;
-	while( c = *(str++) )
+	while( ( c = *(str++)) )
 	{
 		if( gchar() != c )
 		{
@@ -286,8 +286,8 @@ static void StopProfile()
 		int microseconds = (int)((EndTime-StartTime)*1000000);
 
 		char exe[1024] = { 0 };
-		int ret;
-		ret = readlink("/proc/self/exe",exe,sizeof(exe)-1);
+		int ret = readlink("/proc/self/exe",exe,sizeof(exe)-1);
+		ret = ret;
 		char * rend = exe;
 		char * t;
 		for( t = exe; *t; t++ )
