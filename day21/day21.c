@@ -60,10 +60,10 @@ int (*chartocode[2])(char) = { chartocode0, chartocode1 };
 static const void * buttonloclevels[2] = { buttonlocs0, buttonlocs1 };
 static const int    buttonloclen[2] = { 11, 5 };
 
-char * SolveDirFinder( int level, char * code, int codelen )
+char * SolveDirFinder( int level, char * code, int codelen, char *** codepointers, int ** codepointerslen )
 {
-	int outcodelen = 0;
-	char * outcode = 0;
+	int * outcodelen = codepointerslen[level];
+	char ** outcode = codepointers[level];
 	if( level > 1 ) level = 1;
 	const int (*blocs)[2] = buttonloclevels[level];
 	const int bllen = buttonloclen[level];
@@ -149,9 +149,15 @@ int main()
 	int c;
 	for( c = 0; c < numcodes; c++ )
 	{
-		char * outcodeL1 = SolveDirFinder( 0, codes[c], codelen[c] );
-		char * outcodeL2 = SolveDirFinder( 1, outcodeL1, strlen( outcodeL1 ) );
-		char * outcodeL3 = SolveDirFinder( 1, outcodeL2, strlen( outcodeL2 ) );
+		int outcodeL1len = 0;
+		int outcodeL2len = 0;
+		int outcodeL3len = 0;
+		char * outcodeL1 = 0;
+		char * outcodeL2 = 0;
+		char * outcodeL3 = 0;
+		char *** codepointers = { &outcodeL1, &outcodeL2, &outcodeL3 };
+		char int ** codepointerslen = { &outcodeL1len, &outcodeL2len, &outcodeL3len };
+		SolveDirFinder( 0, codes[c], codelen[c], codepointers, codepointerslen );
 		printf( "%s (%ld)\n%s\n%s\n%s\n", outcodeL3, strlen( outcodeL3) , outcodeL2, outcodeL1, codes[c] );
 	}
 
