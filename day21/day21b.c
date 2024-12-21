@@ -6,6 +6,8 @@
 #define CNRBTREE_IMPLEMENTATION
 #include "cnrbtree.h"
 
+#define MAX_DEPTH 3
+
 // Holy C-Style
 typedef uint64_t u64;
 typedef uint8_t u8;
@@ -63,6 +65,105 @@ int (*chartocode[2])(char) = { chartocode0, chartocode1 };
 static const void * buttonloclevels[2] = { buttonlocs0, buttonlocs1 };
 static const int    buttonloclen[2] = { 11, 5 };
 
+static int currentplace[MAX_DEPTH][2]; // Skip first.
+
+int ComputeCostOfOperation( int level, int fx, int fy, int tx, int ty )
+{
+	int dx = tx - fx;
+	int dy = ty - fy;
+	if( level == MAX_DEPTH )
+	{
+		return iabs( dx ) + iabs( dy );
+	}
+
+	// Do we go x-first or y-first?
+	
+}
+
+
+int ComputeLength( char * code, int codelen )
+{
+	int cost = 0;
+
+	int level = 0;
+
+	const int (*blocs)[2] = buttonloclevels[level];
+	const int bllen = buttonloclen[level];
+	int (*ccode)(char) = chartocode[level];
+
+	int icX = blocs[bllen-1][0];
+	int icY = blocs[bllen-1][1];
+
+	int l;
+	for( l = 1; l < MAX_DEPTH; l++ )
+	{
+		currentplace[l][0] = 2;
+		currentplace[l][0] = 0;
+	}
+
+	int c;
+	while( (c = (*code++)) )
+	{
+		int n = ccode( c );
+		int toX = blocs[n][0];
+		int toY = blocs[n][1];
+		int deltaX = toX - icX;
+		int deltaY = toY - icY;
+		// The samples prefer X first then Y.  We will do the same.
+
+		int axisfirst = 0;
+
+		if( deltaX == 0 )
+			axisfirst = 1;
+		else if( deltaY == 0 )
+			axisfirst = 0;
+		else if( isImpossible( level, icX + deltaX, icY ) )
+			axisfirst = 1;
+		else if( isImpossible( level, icX, icY + deltaY ) )
+			axisfirst = 0;
+		else
+		{
+			// Need a permutation.
+			//axisfirst = (permutation >> ((*permutenumber)++)) & 1;
+			axisfirst = 0;
+		}
+
+		int axisno;
+		for( axisno = 0; axisno < 2; axisno++ )
+		{
+			int delta;
+			int i;
+			char deltacode;
+
+			if( axisno == axisfirst )
+			{
+				delta = deltaX;
+				deltacode = delta < 0 ? '<' : '>';
+				delta = iabs( delta );
+				for( i = 0; i < delta; i++ )
+					appendToListC( (u8**)outcode, outcodelen, deltacode );
+			}
+			else
+			{
+				delta = deltaY;
+				deltacode = delta < 0 ? '^' : 'v';
+				delta = iabs( delta );
+				for( i = 0; i < delta; i++ )
+					appendToListC( (u8**)outcode, outcodelen, deltacode );
+			}
+		}
+
+		appendToListC( (u8**)outcode, outcodelen, 'A' );
+		icX = toX;
+		icY = toY;
+	}
+	appendToListC( (u8**)outcode, outcodelen, 0 );
+
+	return cost;
+
+}
+
+#if 0
 int isImpossible( int level, int x, int y )
 {
 	if( level == 0 )
@@ -153,6 +254,7 @@ int SolveDirFinder( int ilevel, char * code, int codelen, char *** codepointers,
 
 	return 0;
 }
+#endif
 
 int main()
 {
@@ -187,7 +289,9 @@ int main()
 	int c;
 	for( c = 0; c < numcodes; c++ )
 	{
-
+		int cl = ComputeLength( codes[c], codelen[c] );
+		printf( "CL: %d\n", cl );
+#if 0
 		uint64_t permutation;
 		int bestcodel3 = INT_MAX;
 		char * bestl1 = 0;
@@ -226,9 +330,9 @@ int main()
 			if( permutenumber > maxpermutation ) maxpermutation = permutenumber;
 			//printf( "%lx %d\n", permutation, permutenumber );
 		}
-
-		sum += strlen( bestl3) * atoi( codes[c] );
-		printf( "%s (%d)\n%s (%d)\n%s (%d)\n", bestl3, strlen( bestl3), bestl2, strlen( bestl2 ), bestl1, strlen ( bestl1 ) );
+#endif
+		sum += scl * atoi( codes[c] );
+//		printf( "%s (%d)\n%s (%d)\n%s (%d)\n", bestl3, strlen( bestl3), bestl2, strlen( bestl2 ), bestl1, strlen ( bestl1 ) );
 
 		//printf( "%s\n", outcodeL2 );
 		//printf( "%s (%ld)\n%s\n%s\n%s\n", outcodeL3, strlen( outcodeL3), outcodeL2, outcodeL1, codes[c] );
