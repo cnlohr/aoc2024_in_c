@@ -65,6 +65,9 @@ int (*chartocode[2])(char) = { chartocode0, chartocode1 };
 static const void * buttonloclevels[2] = { buttonlocs0, buttonlocs1 };
 static const int    buttonloclen[2] = { 11, 5 };
 
+uint64_t permutation;
+int permutenumber;
+
 static int currentplace[MAX_DEPTH+1][2]; // Skip first.
 
 int isImpossible( int level, int x, int y )
@@ -112,8 +115,9 @@ int EmitPosCode( int level, int tx, int ty )
 		axisfirst = 0;
 	else
 	{
-// XXX NEITHER ONE OF THESE!!!
 #if 1
+// XXX NEITHER ONE OF THESE!!!
+#if 0
 		int subX = currentplace[level+1][0];
 		int subY = currentplace[level+1][1];
 
@@ -163,6 +167,10 @@ int EmitPosCode( int level, int tx, int ty )
 		else
 			axisfirst = 1;
 #endif
+#endif
+//			axisfirst = 1;
+
+			//axisfirst = (permutation >> ((permutenumber)++)) & 1;
 
 	}
 
@@ -184,7 +192,6 @@ int EmitPosCode( int level, int tx, int ty )
 			cost += EmitPosCode( level + 1, (deltaX>0)?2:0,1 );
 	}
 	cost += EmitPosCode( level + 1, 2, 0 ); //A
-	printf( "Finish Cost %d  @ %d\n", cost, level );
 	return cost;
 }
 
@@ -198,7 +205,7 @@ int EmitDeltaCode( int level, char dir )
 }
 */
 
-int SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen, uint64_t permutation, int * permutenumber )
+int SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen )
 {
 	u64 cost = 0;
 	int * outcodelen = codepointerslen[ilevel];
@@ -214,8 +221,6 @@ int SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen
 
 	currentplace[0][0] = 2;
 	currentplace[0][1] = 3;
-
-printf( "%d %d\n", currentplace[1][0], currentplace[1][1] );
 
 	int level = ilevel;
 	if( level > 1 ) level = 1;
@@ -249,8 +254,8 @@ printf( "%d %d\n", currentplace[1][0], currentplace[1][1] );
 		else
 		{
 // XXX NEITHER ONE OF THESE!!!
-
-#if 0 
+#if 1
+#if 1
 		// THIS NOT NEXT
 			//axisfirst = (permutation >> ((*permutenumber)++)) & 1;
 			int tX = currentplace[ilevel][0];
@@ -296,9 +301,11 @@ printf( "%d %d\n", currentplace[1][0], currentplace[1][1] );
 			axisfirst = 0;
 		else
 			axisfirst = 1;
-		//axisfirst = 2;//(permutation >> ((*permutenumber)++)) & 1;
 		// Must figure out which one is first.
 #endif
+#endif
+			axisfirst = 0;
+			//axisfirst = (permutation >> ((permutenumber)++)) & 1;
 
 		}
 		int axisno;
@@ -332,7 +339,6 @@ printf( "%d %d\n", currentplace[1][0], currentplace[1][1] );
 			}
 		}
 		cost += EmitPosCode( ilevel+1, 2, 0  ); 
-printf( "COST A %d\n", cost );
 		//appendToListC( (u8**)outcode, outcodelen, 'A' );
 		//outcodelen++;
 		icX = toX;
@@ -382,15 +388,15 @@ int main()
 	for( c = 0; c < numcodes; c++ )
 	{
 
-		uint64_t permutation;
+		//uint64_t permutation;
 		int bestcodel3 = INT_MAX;
 		char * bestl1 = 0;
 		char * bestl2 = 0;
 		char * bestl3 = 0;
-		int permutenumber = 40;
+		permutenumber = 40;
 		int maxpermutation = 0;
 
-//		for( permutation = 0; permutation == 0 || permutation < (1ULL<<maxpermutation); permutation++ )
+		//for( permutation = 0; permutation == 0 || permutation < (1ULL<<maxpermutation); permutation++ )
 		{
 			int outcodeL1len = 0;
 			int outcodeL2len = 0;
@@ -402,20 +408,18 @@ int main()
 			int * codepointerslen[3] = { &outcodeL1len, &outcodeL2len, &outcodeL3len };
 
 			permutenumber = 0;
-			outcodeL3len = SolveDirFinder( 0, codes[c], codelen[c], codepointerslen, permutation, &permutenumber );
+			outcodeL3len = SolveDirFinder( 0, codes[c], codelen[c], codepointerslen );
 			//printf( "%lx %d %d\n", permutation, permutenumber, outcodeL3len-1 );
 			//printf( "%lx / %d\n", permutation, outcodeL3len-1 );
 			if( outcodeL3len < bestcodel3 )
 			{
 				bestcodel3 = outcodeL3len;
 			}
-			permutenumber++;
 			if( permutenumber > maxpermutation ) maxpermutation = permutenumber;
-			//printf( "%lx %d\n", permutation, permutenumber );
 		}
 
 		sum += bestcodel3 * atoi( codes[c] );
-		printf( "****** %s %d\n", codes[c], bestcodel3 );
+		printf( "****** %s %d (%d)\n", codes[c], bestcodel3, permutenumber );
 
 		//printf( "%s\n", outcodeL2 );
 		//printf( "%s (%ld)\n%s\n%s\n%s\n", outcodeL3, strlen( outcodeL3), outcodeL2, outcodeL1, codes[c] );
