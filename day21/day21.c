@@ -111,7 +111,6 @@ int SolveDirFinder( int ilevel, char * code, int codelen, char *** codepointers,
 			axisfirst = 0;
 		else
 		{
-			// Need a permutation.
 			axisfirst = (permutation >> ((*permutenumber)++)) & 1;
 		}
 

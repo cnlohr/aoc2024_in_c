@@ -6,11 +6,11 @@
 #define CNRBTREE_IMPLEMENTATION
 #include "cnrbtree.h"
 
-#define MAX_DEPTH 3
-
 // Holy C-Style
 typedef uint64_t u64;
 typedef uint8_t u8;
+
+#define MAX_DEPTH 2
 
 //CNRBTREETEMPLATE( u64, u64, RBptrcmpnomatch, RBptrcpy, RBnullop );
 //CNRBTREETEMPLATE( int, int, RBptrcmp, RBptrcpy, RBnullop );
@@ -65,105 +65,8 @@ int (*chartocode[2])(char) = { chartocode0, chartocode1 };
 static const void * buttonloclevels[2] = { buttonlocs0, buttonlocs1 };
 static const int    buttonloclen[2] = { 11, 5 };
 
-static int currentplace[MAX_DEPTH][2]; // Skip first.
+static int currentplace[MAX_DEPTH+1][2]; // Skip first.
 
-int ComputeCostOfOperation( int level, int fx, int fy, int tx, int ty )
-{
-	int dx = tx - fx;
-	int dy = ty - fy;
-	if( level == MAX_DEPTH )
-	{
-		return iabs( dx ) + iabs( dy );
-	}
-
-	// Do we go x-first or y-first?
-	
-}
-
-
-int ComputeLength( char * code, int codelen )
-{
-	int cost = 0;
-
-	int level = 0;
-
-	const int (*blocs)[2] = buttonloclevels[level];
-	const int bllen = buttonloclen[level];
-	int (*ccode)(char) = chartocode[level];
-
-	int icX = blocs[bllen-1][0];
-	int icY = blocs[bllen-1][1];
-
-	int l;
-	for( l = 1; l < MAX_DEPTH; l++ )
-	{
-		currentplace[l][0] = 2;
-		currentplace[l][0] = 0;
-	}
-
-	int c;
-	while( (c = (*code++)) )
-	{
-		int n = ccode( c );
-		int toX = blocs[n][0];
-		int toY = blocs[n][1];
-		int deltaX = toX - icX;
-		int deltaY = toY - icY;
-		// The samples prefer X first then Y.  We will do the same.
-
-		int axisfirst = 0;
-
-		if( deltaX == 0 )
-			axisfirst = 1;
-		else if( deltaY == 0 )
-			axisfirst = 0;
-		else if( isImpossible( level, icX + deltaX, icY ) )
-			axisfirst = 1;
-		else if( isImpossible( level, icX, icY + deltaY ) )
-			axisfirst = 0;
-		else
-		{
-			// Need a permutation.
-			//axisfirst = (permutation >> ((*permutenumber)++)) & 1;
-			axisfirst = 0;
-		}
-
-		int axisno;
-		for( axisno = 0; axisno < 2; axisno++ )
-		{
-			int delta;
-			int i;
-			char deltacode;
-
-			if( axisno == axisfirst )
-			{
-				delta = deltaX;
-				deltacode = delta < 0 ? '<' : '>';
-				delta = iabs( delta );
-				for( i = 0; i < delta; i++ )
-					appendToListC( (u8**)outcode, outcodelen, deltacode );
-			}
-			else
-			{
-				delta = deltaY;
-				deltacode = delta < 0 ? '^' : 'v';
-				delta = iabs( delta );
-				for( i = 0; i < delta; i++ )
-					appendToListC( (u8**)outcode, outcodelen, deltacode );
-			}
-		}
-
-		appendToListC( (u8**)outcode, outcodelen, 'A' );
-		icX = toX;
-		icY = toY;
-	}
-	appendToListC( (u8**)outcode, outcodelen, 0 );
-
-	return cost;
-
-}
-
-#if 0
 int isImpossible( int level, int x, int y )
 {
 	if( level == 0 )
@@ -176,10 +79,143 @@ int isImpossible( int level, int x, int y )
 	}
 }
 
-int SolveDirFinder( int ilevel, char * code, int codelen, char *** codepointers, int ** codepointerslen, uint64_t permutation, int * permutenumber )
+
+int EmitPosCode( int level, int tx, int ty )
 {
+	int fx = currentplace[level][0];
+	int fy = currentplace[level][1];
+	int deltaX = tx - fx;
+	int deltaY = ty - fy;
+	if( level == MAX_DEPTH )
+	{
+		currentplace[level][0] = tx;
+		currentplace[level][1] = ty;
+		return iabs( deltaX ) + iabs( deltaY ) + 1;
+	}
+	int axisfirst = 0;
+
+	currentplace[level][0] = tx;
+	currentplace[level][1] = ty;
+
+	if( deltaX == 0 && deltaY == 0 )
+	{
+		// Don't go anywhere, just press A.
+		return EmitPosCode( level + 1, 2, 0 );
+	}
+	else if( deltaX == 0 )
+		axisfirst = 1;
+	else if( deltaY == 0 )
+		axisfirst = 0;
+	else if( isImpossible( level, fx + deltaX, fy ) )
+		axisfirst = 1;
+	else if( isImpossible( level, fx, fy + deltaY ) )
+		axisfirst = 0;
+	else
+	{
+// XXX NEITHER ONE OF THESE!!!
+#if 1
+		int subX = currentplace[level+1][0];
+		int subY = currentplace[level+1][1];
+
+		// both deltaX and deltaY are nonzero.
+
+		int scoreifxfirst =
+			iabs( subX - ((deltaX>0)?2:0) ) +
+			iabs( subY - 1 ) +  // First go to <2or0>,<1>
+			iabs( ((deltaX>0)?2:0) - 1 ) + 
+			iabs( 1 - ((deltaY>0)?1:0));
+
+		int scoreifyfirst =
+			iabs( subX - 1 ) +
+			iabs( subY - ((deltaY>0)?1:0 ) ) +  // First go to <1>,<1or0>
+			iabs( 1 - ((deltaX>0)?2:0) ) + 
+			iabs( ((deltaY>0)?1:0 ) - 1 );
+		printf( "%d/%d\n", scoreifxfirst, scoreifyfirst );
+		if( scoreifxfirst < scoreifyfirst )
+			axisfirst = 0;
+		else
+			axisfirst = 1;
+		//axisfirst = 2;//(permutation >> ((*permutenumber)++)) & 1;
+		// Must figure out which one is first.
+#else
+		// Sub or this.
+
+		//axisfirst = (permutation >> ((*permutenumber)++)) & 1;
+		int tX = currentplace[level][0];
+		int tY = currentplace[level][1];
+
+		// both deltaX and deltaY are nonzero.
+
+		int scoreifxfirst =
+			iabs( tX - ((deltaX>0)?2:0) ) +
+			iabs( tY - 1 ) +  // First go to <2or0>,<1>
+			iabs( ((deltaX>0)?2:0) - 1 ) + 
+			iabs( 1 - ((deltaY>0)?1:0));
+
+		int scoreifyfirst =
+			iabs( tX - 1 ) +
+			iabs( tY - ((deltaY>0)?1:0 ) ) +  // First go to <1>,<1or0>
+			iabs( 1 - ((deltaX>0)?2:0) ) + 
+			iabs( ((deltaY>0)?1:0 ) - 1 );
+		printf( "@%d %d/%d\n", level, scoreifxfirst, scoreifyfirst );
+		if( scoreifxfirst < scoreifyfirst )
+			axisfirst = 0;
+		else
+			axisfirst = 1;
+#endif
+
+	}
+
+	int cost = 0;
+	if( axisfirst == 0 )
+	{
+		int n;
+		for( n = 0; n < iabs(deltaX); n++ )
+			cost += EmitPosCode( level + 1, (deltaX>0)?2:0,1 );
+		for( n = 0; n < iabs(deltaY); n++ )
+			cost += EmitPosCode( level + 1, 1, (deltaY>0)?1:0 );
+	}
+	else if( axisfirst == 1 )
+	{
+		int n;
+		for( n = 0; n < iabs(deltaY); n++ )
+			cost += EmitPosCode( level + 1, 1, (deltaY>0)?1:0 );
+		for( n = 0; n < iabs(deltaX); n++ )
+			cost += EmitPosCode( level + 1, (deltaX>0)?2:0,1 );
+	}
+	cost += EmitPosCode( level + 1, 2, 0 ); //A
+	printf( "Finish Cost %d  @ %d\n", cost, level );
+	return cost;
+}
+
+
+/*
+int EmitDeltaCode( int level, char dir )
+{
+	switch( dir )
+	{
+	}
+}
+*/
+
+int SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen, uint64_t permutation, int * permutenumber )
+{
+	u64 cost = 0;
 	int * outcodelen = codepointerslen[ilevel];
-	char ** outcode = codepointers[ilevel];
+	//char ** outcode = codepointers[ilevel];
+
+
+	int l;
+	for( l = 0; l < MAX_DEPTH+1; l++ )
+	{
+		currentplace[l][0] = 2;
+		currentplace[l][1] = 0;
+	}
+
+	currentplace[0][0] = 2;
+	currentplace[0][1] = 3;
+
+printf( "%d %d\n", currentplace[1][0], currentplace[1][1] );
 
 	int level = ilevel;
 	if( level > 1 ) level = 1;
@@ -212,49 +248,105 @@ int SolveDirFinder( int ilevel, char * code, int codelen, char *** codepointers,
 			axisfirst = 0;
 		else
 		{
-			// Need a permutation.
-			axisfirst = (permutation >> ((*permutenumber)++)) & 1;
-		}
+// XXX NEITHER ONE OF THESE!!!
 
+#if 0 
+		// THIS NOT NEXT
+			//axisfirst = (permutation >> ((*permutenumber)++)) & 1;
+			int tX = currentplace[ilevel][0];
+			int tY = currentplace[ilevel][1];
+
+			// both deltaX and deltaY are nonzero.
+
+			int scoreifxfirst =
+				iabs( tX - ((deltaX>0)?2:0) ) +
+				iabs( tY - 1 ) +  // First go to <2or0>,<1>
+				iabs( ((deltaX>0)?2:0) - 1 ) + 
+				iabs( 1 - ((deltaY>0)?1:0));
+
+			int scoreifyfirst =
+				iabs( tX - 1 ) +
+				iabs( tY - ((deltaY>0)?1:0 ) ) +  // First go to <1>,<1or0>
+				iabs( 1 - ((deltaX>0)?2:0) ) + 
+				iabs( ((deltaY>0)?1:0 ) - 1 );
+			printf( "SCOREIF %d/%d\n", scoreifxfirst, scoreifyfirst );
+			if( scoreifxfirst < scoreifyfirst )
+				axisfirst = 0;
+			else
+				axisfirst = 1;
+#else
+		int subX = currentplace[level+1][0];
+		int subY = currentplace[level+1][1];
+
+		// both deltaX and deltaY are nonzero.
+
+		int scoreifxfirst =
+			iabs( subX - ((deltaX>0)?2:0) ) +
+			iabs( subY - 1 ) +  // First go to <2or0>,<1>
+			iabs( ((deltaX>0)?2:0) - 1 ) + 
+			iabs( 1 - ((deltaY>0)?1:0));
+
+		int scoreifyfirst =
+			iabs( subX - 1 ) +
+			iabs( subY - ((deltaY>0)?1:0 ) ) +  // First go to <1>,<1or0>
+			iabs( 1 - ((deltaX>0)?2:0) ) + 
+			iabs( ((deltaY>0)?1:0 ) - 1 );
+		printf( "%d/%d\n", scoreifxfirst, scoreifyfirst );
+		if( scoreifxfirst < scoreifyfirst )
+			axisfirst = 0;
+		else
+			axisfirst = 1;
+		//axisfirst = 2;//(permutation >> ((*permutenumber)++)) & 1;
+		// Must figure out which one is first.
+#endif
+
+		}
 		int axisno;
 		for( axisno = 0; axisno < 2; axisno++ )
 		{
 			int delta;
 			int i;
-			char deltacode;
+			//char deltacode;
 
 			if( axisno == axisfirst )
 			{
 				delta = deltaX;
-				deltacode = delta < 0 ? '<' : '>';
+				//deltacode = delta < 0 ? '<' : '>';
 				delta = iabs( delta );
 				for( i = 0; i < delta; i++ )
-					appendToListC( (u8**)outcode, outcodelen, deltacode );
+					cost += EmitPosCode( ilevel+1, (deltaX>0)?2:0,1  ); 
+					//outcodelen++;
+					//appendToListC( (u8**)outcode, outcodelen, deltacode );
 			}
 			else
 			{
 				delta = deltaY;
-				deltacode = delta < 0 ? '^' : 'v';
+				//deltacode = delta < 0 ? '^' : 'v';
 				delta = iabs( delta );
 				for( i = 0; i < delta; i++ )
-					appendToListC( (u8**)outcode, outcodelen, deltacode );
+					cost += EmitPosCode( ilevel+1, 1, (deltaY>0)?1:0 );
+
+					//outcodelen += EmitPosCode( ilevel+1, deltacode ); 
+					//outcodelen++;
+					//appendToListC( (u8**)outcode, outcodelen, deltacode );
 			}
 		}
-
-		appendToListC( (u8**)outcode, outcodelen, 'A' );
+		cost += EmitPosCode( ilevel+1, 2, 0  ); 
+printf( "COST A %d\n", cost );
+		//appendToListC( (u8**)outcode, outcodelen, 'A' );
+		//outcodelen++;
 		icX = toX;
 		icY = toY;
 	}
-	appendToListC( (u8**)outcode, outcodelen, 0 );
+	//appendToListC( (u8**)outcode, outcodelen, 0 );
 
-	if( ilevel < 2 )
-	{
-			SolveDirFinder( ilevel + 1, *outcode, *outcodelen, codepointers, codepointerslen, permutation, permutenumber );
-	}
+//	if( ilevel < 2 )
+//	{
+//			SolveDirFinder( ilevel + 1, *outcode, codepointerslen, permutation, permutenumber );
+//	}
 
-	return 0;
+	return cost;
 }
-#endif
 
 int main()
 {
@@ -289,9 +381,7 @@ int main()
 	int c;
 	for( c = 0; c < numcodes; c++ )
 	{
-		int cl = ComputeLength( codes[c], codelen[c] );
-		printf( "CL: %d\n", cl );
-#if 0
+
 		uint64_t permutation;
 		int bestcodel3 = INT_MAX;
 		char * bestl1 = 0;
@@ -300,7 +390,7 @@ int main()
 		int permutenumber = 40;
 		int maxpermutation = 0;
 
-		for( permutation = 0; permutation == 0 || permutation < (1ULL<<maxpermutation); permutation++ )
+//		for( permutation = 0; permutation == 0 || permutation < (1ULL<<maxpermutation); permutation++ )
 		{
 			int outcodeL1len = 0;
 			int outcodeL2len = 0;
@@ -312,27 +402,20 @@ int main()
 			int * codepointerslen[3] = { &outcodeL1len, &outcodeL2len, &outcodeL3len };
 
 			permutenumber = 0;
-			SolveDirFinder( 0, codes[c], codelen[c], codepointers, codepointerslen, permutation, &permutenumber );
+			outcodeL3len = SolveDirFinder( 0, codes[c], codelen[c], codepointerslen, permutation, &permutenumber );
 			//printf( "%lx %d %d\n", permutation, permutenumber, outcodeL3len-1 );
 			//printf( "%lx / %d\n", permutation, outcodeL3len-1 );
 			if( outcodeL3len < bestcodel3 )
 			{
-				//printf( "%s (%lx)\n", outcodeL3-1, permutation );
-				bestl3 = strdup( outcodeL3 );
-				bestl2 = strdup( outcodeL2 );
-				bestl1 = strdup( outcodeL1 );
 				bestcodel3 = outcodeL3len;
 			}
 			permutenumber++;
-			free( outcodeL1 );
-			free( outcodeL2 );
-			free( outcodeL3 );
 			if( permutenumber > maxpermutation ) maxpermutation = permutenumber;
 			//printf( "%lx %d\n", permutation, permutenumber );
 		}
-#endif
-		sum += scl * atoi( codes[c] );
-//		printf( "%s (%d)\n%s (%d)\n%s (%d)\n", bestl3, strlen( bestl3), bestl2, strlen( bestl2 ), bestl1, strlen ( bestl1 ) );
+
+		sum += bestcodel3 * atoi( codes[c] );
+		printf( "****** %s %d\n", codes[c], bestcodel3 );
 
 		//printf( "%s\n", outcodeL2 );
 		//printf( "%s (%ld)\n%s\n%s\n%s\n", outcodeL3, strlen( outcodeL3), outcodeL2, outcodeL1, codes[c] );
