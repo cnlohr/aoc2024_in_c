@@ -10,7 +10,7 @@
 typedef uint64_t u64;
 typedef uint8_t u8;
 
-#define MAX_DEPTH 2
+#define MAX_DEPTH 25
 
 //CNRBTREETEMPLATE( u64, u64, RBptrcmpnomatch, RBptrcpy, RBnullop );
 //CNRBTREETEMPLATE( int, int, RBptrcmp, RBptrcpy, RBnullop );
@@ -83,7 +83,7 @@ int isImpossible( int level, int x, int y )
 }
 
 
-int EmitPosCode( int level, int tx, int ty )
+int64_t EmitPosCode( int level, int tx, int ty )
 {
 	int fx = currentplace[level][0];
 	int fy = currentplace[level][1];
@@ -116,6 +116,9 @@ int EmitPosCode( int level, int tx, int ty )
 	else
 	{
 #if 1
+		axisfirst = 0;
+		if( deltaX > 0 && deltaY > 0 ) axisfirst = 1;
+#else
 // XXX NEITHER ONE OF THESE!!!
 #if 0
 		int subX = currentplace[level+1][0];
@@ -174,7 +177,7 @@ int EmitPosCode( int level, int tx, int ty )
 
 	}
 
-	int cost = 0;
+	int64_t cost = 0;
 	if( axisfirst == 0 )
 	{
 		int n;
@@ -205,7 +208,7 @@ int EmitDeltaCode( int level, char dir )
 }
 */
 
-int SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen )
+int64_t SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen )
 {
 	u64 cost = 0;
 	int * outcodelen = codepointerslen[ilevel];
@@ -253,8 +256,10 @@ int SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen
 			axisfirst = 0;
 		else
 		{
-// XXX NEITHER ONE OF THESE!!!
 #if 1
+		axisfirst = 0;
+		if( deltaX > 0 && deltaY > 0 ) axisfirst = 1;
+#else
 #if 1
 		// THIS NOT NEXT
 			//axisfirst = (permutation >> ((*permutenumber)++)) & 1;
@@ -304,8 +309,6 @@ int SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen
 		// Must figure out which one is first.
 #endif
 #endif
-			axisfirst = 0;
-			//axisfirst = (permutation >> ((permutenumber)++)) & 1;
 
 		}
 		int axisno;
@@ -389,7 +392,7 @@ int main()
 	{
 
 		//uint64_t permutation;
-		int bestcodel3 = INT_MAX;
+		int64_t bestcodel3 = 1ULL<<63;
 		char * bestl1 = 0;
 		char * bestl2 = 0;
 		char * bestl3 = 0;
@@ -398,28 +401,16 @@ int main()
 
 		//for( permutation = 0; permutation == 0 || permutation < (1ULL<<maxpermutation); permutation++ )
 		{
-			int outcodeL1len = 0;
-			int outcodeL2len = 0;
-			int outcodeL3len = 0;
-			char * outcodeL1 = 0;
-			char * outcodeL2 = 0;
-			char * outcodeL3 = 0;
-			char ** codepointers[3] = { &outcodeL1, &outcodeL2, &outcodeL3 };
-			int * codepointerslen[3] = { &outcodeL1len, &outcodeL2len, &outcodeL3len };
+			int64_t outcodeL3len = 0;
 
 			permutenumber = 0;
-			outcodeL3len = SolveDirFinder( 0, codes[c], codelen[c], codepointerslen );
+			bestcodel3 = SolveDirFinder( 0, codes[c], codelen[c], 0 );
 			//printf( "%lx %d %d\n", permutation, permutenumber, outcodeL3len-1 );
 			//printf( "%lx / %d\n", permutation, outcodeL3len-1 );
-			if( outcodeL3len < bestcodel3 )
-			{
-				bestcodel3 = outcodeL3len;
-			}
-			if( permutenumber > maxpermutation ) maxpermutation = permutenumber;
 		}
 
 		sum += bestcodel3 * atoi( codes[c] );
-		printf( "****** %s %d (%d)\n", codes[c], bestcodel3, permutenumber );
+		printf( "****** %s %ld (%ld)\n", codes[c], bestcodel3, permutenumber );
 
 		//printf( "%s\n", outcodeL2 );
 		//printf( "%s (%ld)\n%s\n%s\n%s\n", outcodeL3, strlen( outcodeL3), outcodeL2, outcodeL1, codes[c] );
@@ -428,3 +419,5 @@ int main()
 
 	return 0;
 }
+// 90245482350618 is too low????
+// 225901581929724 too high
