@@ -10,10 +10,12 @@
 typedef uint64_t u64;
 typedef uint8_t u8;
 
-#define MAX_DEPTH 2
+#define MAX_DEPTH 25
 
-//CNRBTREETEMPLATE( u64, u64, RBptrcmpnomatch, RBptrcpy, RBnullop );
+CNRBTREETEMPLATE( u64, u64, RBptrcmp, RBptrcpy, RBnullop );
 //CNRBTREETEMPLATE( int, int, RBptrcmp, RBptrcpy, RBnullop );
+
+cnrbtree_u64u64 * cache;
 
 //static const int dirx[] = { -1, 0, 1, 0 };
 //static const int diry[] = { 0,  1, 0,-1 };
@@ -83,18 +85,26 @@ int isImpossible( int level, int x, int y )
 }
 
 
+
 int64_t EmitPosCode( int level, int tx, int ty )
 {
 	int fx = currentplace[level][0];
 	int fy = currentplace[level][1];
 	int deltaX = tx - fx;
 	int deltaY = ty - fy;
+
+
 	if( level == MAX_DEPTH )
 	{
 		currentplace[level][0] = tx;
 		currentplace[level][1] = ty;
-		return iabs( deltaX ) + iabs( deltaY ) + 1;
+		u64 ret = iabs( deltaX ) + iabs( deltaY ) + 1;
+		return ret;
 	}
+
+//	u64 key = ((fx&0xf)<<0) | ((fy&0xf)<<4) | ((tx&0xf)<<8) | ((ty&0xf)<<12) | ((level)<<16);
+//	if( RBHAS( cache, key ) ) return RBA( cache, key );
+
 	int axisfirst = 0;
 
 	currentplace[level][0] = tx;
@@ -103,7 +113,9 @@ int64_t EmitPosCode( int level, int tx, int ty )
 	if( deltaX == 0 && deltaY == 0 )
 	{
 		// Don't go anywhere, just press A.
-		return EmitPosCode( level + 1, 2, 0 );
+		u64 ret = EmitPosCode( level + 1, 2, 0 );
+//		RBA( cache, key ) = ret;
+		return ret;
 	}
 	else if( deltaX == 0 )
 		axisfirst = 1;
@@ -195,6 +207,7 @@ int64_t EmitPosCode( int level, int tx, int ty )
 			cost += EmitPosCode( level + 1, (deltaX>0)?2:0,1 );
 	}
 	cost += EmitPosCode( level + 1, 2, 0 ); //A
+//	RBA( cache, key ) = cost;
 	return cost;
 }
 
@@ -359,6 +372,8 @@ int64_t SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointer
 
 int main()
 {
+	cache = cnrbtree_u64u64_create();
+
 	char ** codes = 0;
 	int * codelen = 0;
 	int numcodes = 0;
@@ -390,7 +405,6 @@ int main()
 	int c;
 	for( c = 0; c < numcodes; c++ )
 	{
-
 		//uint64_t permutation;
 		int64_t bestcodel3 = 1ULL<<63;
 		char * bestl1 = 0;
@@ -421,3 +435,8 @@ int main()
 }
 // 90245482350618 is too low????
 // 225901581929724 too high
+// 196910339808654
+// 37347905270329
+
+// 90750571880 
+// 15300110365
