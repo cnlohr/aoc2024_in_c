@@ -15,7 +15,7 @@ typedef uint8_t u8;
 CNRBTREETEMPLATE( u64, u64, RBptrcmp, RBptrcpy, RBnullop );
 //CNRBTREETEMPLATE( int, int, RBptrcmp, RBptrcpy, RBnullop );
 
-cnrbtree_u64u64 * cache;
+//cnrbtree_u64u64 * cache;
 
 //static const int dirx[] = { -1, 0, 1, 0 };
 //static const int diry[] = { 0,  1, 0,-1 };
@@ -102,8 +102,9 @@ int64_t EmitPosCode( int level, int tx, int ty )
 		return ret;
 	}
 
-//	u64 key = ((fx&0xf)<<0) | ((fy&0xf)<<4) | ((tx&0xf)<<8) | ((ty&0xf)<<12) | ((level)<<16);
-//	if( RBHAS( cache, key ) ) return RBA( cache, key );
+	//u64 key = ((fx)<<0) | ((fy)<<4) | ((tx)<<8) | ((ty)<<12) | ((level)<<16) | (currentplace[level+1][0]<<24) | (currentplace[level+1][1]<<32);
+	//printf( "%lx\n", key );
+	//if( RBHAS( cache, key ) ) return RBA( cache, key );
 
 	int axisfirst = 0;
 
@@ -114,7 +115,7 @@ int64_t EmitPosCode( int level, int tx, int ty )
 	{
 		// Don't go anywhere, just press A.
 		u64 ret = EmitPosCode( level + 1, 2, 0 );
-//		RBA( cache, key ) = ret;
+		//RBA( cache, key ) = ret;
 		return ret;
 	}
 	else if( deltaX == 0 )
@@ -207,7 +208,7 @@ int64_t EmitPosCode( int level, int tx, int ty )
 			cost += EmitPosCode( level + 1, (deltaX>0)?2:0,1 );
 	}
 	cost += EmitPosCode( level + 1, 2, 0 ); //A
-//	RBA( cache, key ) = cost;
+	//RBA( cache, key ) = cost;
 	return cost;
 }
 
@@ -224,7 +225,7 @@ int EmitDeltaCode( int level, char dir )
 int64_t SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointerslen )
 {
 	u64 cost = 0;
-	int * outcodelen = codepointerslen[ilevel];
+	//int * outcodelen = codepointerslen[ilevel];
 	//char ** outcode = codepointers[ilevel];
 
 
@@ -372,7 +373,7 @@ int64_t SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointer
 
 int main()
 {
-	cache = cnrbtree_u64u64_create();
+	//cache = cnrbtree_u64u64_create();
 
 	char ** codes = 0;
 	int * codelen = 0;
@@ -407,24 +408,24 @@ int main()
 	{
 		//uint64_t permutation;
 		int64_t bestcodel3 = 1ULL<<63;
-		char * bestl1 = 0;
-		char * bestl2 = 0;
-		char * bestl3 = 0;
-		permutenumber = 40;
-		int maxpermutation = 0;
+		//char * bestl1 = 0;
+		//char * bestl2 = 0;
+		//char * bestl3 = 0;
+		//permutenumber = 40;
+		//int maxpermutation = 0;
 
 		//for( permutation = 0; permutation == 0 || permutation < (1ULL<<maxpermutation); permutation++ )
 		{
-			int64_t outcodeL3len = 0;
+			//int64_t outcodeL3len = 0;
 
-			permutenumber = 0;
+			//permutenumber = 0;
 			bestcodel3 = SolveDirFinder( 0, codes[c], codelen[c], 0 );
 			//printf( "%lx %d %d\n", permutation, permutenumber, outcodeL3len-1 );
 			//printf( "%lx / %d\n", permutation, outcodeL3len-1 );
 		}
 
 		sum += bestcodel3 * atoi( codes[c] );
-		printf( "****** %s %ld (%ld)\n", codes[c], bestcodel3, permutenumber );
+		printf( "****** %s %ld\n", codes[c], bestcodel3 );
 
 		//printf( "%s\n", outcodeL2 );
 		//printf( "%s (%ld)\n%s\n%s\n%s\n", outcodeL3, strlen( outcodeL3), outcodeL2, outcodeL1, codes[c] );

@@ -189,8 +189,8 @@ int main()
 
 		uint64_t permutation;
 		int bestcodel3 = INT_MAX;
-		char * bestl1 = 0;
-		char * bestl2 = 0;
+		//char * bestl1 = 0;
+		//char * bestl2 = 0;
 		char * bestl3 = 0;
 		int permutenumber = 40;
 		int maxpermutation = 0;
@@ -214,8 +214,8 @@ int main()
 			{
 				//printf( "%s (%lx)\n", outcodeL3-1, permutation );
 				bestl3 = strdup( outcodeL3 );
-				bestl2 = strdup( outcodeL2 );
-				bestl1 = strdup( outcodeL1 );
+				//bestl2 = strdup( outcodeL2 );
+				//bestl1 = strdup( outcodeL1 );
 				bestcodel3 = outcodeL3len;
 			}
 			permutenumber++;
@@ -227,7 +227,7 @@ int main()
 		}
 
 		sum += strlen( bestl3) * atoi( codes[c] );
-		printf( "%s (%d)\n%s (%d)\n%s (%d)\n", bestl3, strlen( bestl3), bestl2, strlen( bestl2 ), bestl1, strlen ( bestl1 ) );
+		//printf( "%s (%ld)\n%s (%ld)\n%s (%ld)\n", bestl3, strlen( bestl3), bestl2, strlen( bestl2 ), bestl1, strlen ( bestl1 ) );
 
 		//printf( "%s\n", outcodeL2 );
 		//printf( "%s (%ld)\n%s\n%s\n%s\n", outcodeL3, strlen( outcodeL3), outcodeL2, outcodeL1, codes[c] );

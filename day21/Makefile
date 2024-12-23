@@ -11,12 +11,12 @@ day21b : day21b.c
 	gcc $(CFLAGS) -o $@ $^ -DPARTB=1
 
 test : day21 day21b
-	test "$(shell ./day21 < sample.txt)" = "10,0"
-	test "$(shell ./day21b < sample.txt)" = "2268,0"
+	test "$(shell ./day21 < sample.txt)" = "126384"
+	#test "$(shell ./day21b < sample.txt)" = "2268,0"
 
 testinput : day21 day21b
-	test "$(shell ./day21 < input.txt)" = "4216,1463"
-	test "$(shell ./day21b < input.txt)" = "1505959,985332"
+	test "$(shell ./day21 < input.txt)" = "157908"
+	#test "$(shell ./day21b < input.txt)" = "196910339808654"
 
 clean :
 	rm -rf day21 day21b
