@@ -10,7 +10,7 @@
 typedef uint64_t u64;
 typedef uint8_t u8;
 
-#define MAX_DEPTH 2
+#define MAX_DEPTH 25
 
 //CNRBTREETEMPLATE( u64, u64, RBptrcmpnomatch, RBptrcpy, RBnullop );
 //CNRBTREETEMPLATE( int, int, RBptrcmp, RBptrcpy, RBnullop );
@@ -117,7 +117,7 @@ int64_t EmitPosCode( int level, int tx, int ty )
 	{
 #if 1
 		axisfirst = 0;
-		if( deltaX > 0 ) axisfirst = 1;
+		if( deltaX > 0 && deltaY > 0 ) axisfirst = 1;
 #else
 // XXX NEITHER ONE OF THESE!!!
 #if 0
@@ -258,7 +258,7 @@ int64_t SolveDirFinder( int ilevel, char * code, int codelen, int ** codepointer
 		{
 #if 1
 		axisfirst = 0;
-		if( deltaX > 0 ) axisfirst = 1;
+		if( deltaX > 0 && deltaY > 0 ) axisfirst = 1;
 #else
 #if 1
 		// THIS NOT NEXT
