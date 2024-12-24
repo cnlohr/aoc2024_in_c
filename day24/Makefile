@@ -11,12 +11,10 @@ day24b : day24b.c
 	gcc $(CFLAGS) -o $@ $^ -DPARTB=1
 
 test : day24 day24b
-	test "$(shell ./day24 < sample.txt)" = "7"
-	test "$(shell ./day24b < sample.txt)" = "co,de,ka,ta"
+	test "$(shell ./day24 < sample.txt)" = "4"
 
 testinput : day24 day24b
-	test "$(shell ./day24 < input.txt)" = "1046"
-	test "$(shell ./day24b < input.txt)" = "de,id,ke,ls,po,sn,tf,tl,tm,uj,un,xw,yz"
+	test "$(shell ./day24 < input.txt)" = "48806532300520"
 
 clean :
 	rm -rf day24 day24b
