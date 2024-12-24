@@ -23,7 +23,8 @@ void appendToList( int ** list, int * len, int num );
 void appendToListC( unsigned char ** list, int * len, int num );
 void appendToListP( void *** list, int * len, void * num );
 void appendToList64( int64_t ** list, int * len, int64_t num );
-int takeString( const char * str );
+int matchString( const char * str );
+char * takeString( const char * whitespace );
 
 void terror( const char * err );
 void zdata( void * data, int len );
@@ -140,7 +141,30 @@ int peekChar( void )
 	}
 }
 
-int takeString( const char * str )
+
+char * takeString( const char * whitespace )
+{
+	char * ret = 0;
+	int rlen = 0;
+	while( !iseof() )
+	{
+		int c = gchar();
+		const char * comp = whitespace;
+		while( *comp )
+		{
+			if( *comp == c )
+				break;
+			comp++;
+		}
+		if( *comp ) break;
+		appendToListC( (unsigned char**)&ret, &rlen, c );
+	}
+	if( !ret ) return 0;
+	appendToListC( (unsigned char**)&ret, &rlen, 0 );
+	return ret;
+}
+
+int matchString( const char * str )
 {
 	int c;
 	while( ( c = *(str++)) )
